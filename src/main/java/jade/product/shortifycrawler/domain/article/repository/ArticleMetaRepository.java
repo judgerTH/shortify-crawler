@@ -11,5 +11,8 @@ public interface ArticleMetaRepository
 
     boolean existsByUrl(String url);
 
-    List<ArticleMeta> findTop20ByStatusOrderByCollectedAtAsc(ArticleProcessStatus status);
+    List<ArticleMeta> findTop20ByStatusOrderByCollectedAtDesc(
+            ArticleProcessStatus status
+    );
+
 }

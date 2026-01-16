@@ -46,7 +46,15 @@ public class NewsBatchScheduler {
     @Scheduled(cron = "0 5 */2 * * *")
     public void summarizeNews() {
         log.info("[SCHEDULE] summary start");
-        summaryBatchService.run();
+        try{
+            summaryBatchService.run();
+        }catch(Exception e){
+            log.error("[SCHEDULE] summary failed", e);
+            discordNotifier.send(
+                    "[Shortify][SUMMARY ERROR]\n"
+                            + e.getMessage()
+            );
+        }
         log.info("[SCHEDULE] summary end");
     }
 

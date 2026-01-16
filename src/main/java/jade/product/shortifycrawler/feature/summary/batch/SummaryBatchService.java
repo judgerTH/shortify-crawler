@@ -21,7 +21,7 @@ public class SummaryBatchService {
     public void run() {
 
         List<ArticleMeta> targets =
-                metaRepo.findTop20ByStatusOrderByCollectedAtAsc(
+                metaRepo.findTop20ByStatusOrderByCollectedAtDesc(
                         ArticleProcessStatus.COLLECTED
                 );
 

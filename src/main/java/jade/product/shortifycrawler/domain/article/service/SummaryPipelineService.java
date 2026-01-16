@@ -20,11 +20,13 @@ public class SummaryPipelineService {
 
     @Transactional
     public void process(ArticleMeta meta) {
+        ArticleMeta managedMeta = metaRepo.findById(meta.getId())
+                .orElseThrow();
 
         try {
-            OriginalArticle original = originalRepo.findByUrl(meta.getUrl())
+            OriginalArticle original = originalRepo.findByUrl(managedMeta.getUrl())
                     .orElseThrow(() ->
-                            new IllegalStateException("OriginalArticle not found: " + meta.getUrl())
+                            new IllegalStateException("OriginalArticle not found: " + managedMeta.getUrl())
                     );
 
             String response = summaryService.summarize(original.getContent());
@@ -39,23 +41,25 @@ public class SummaryPipelineService {
                     parsed.getContent(),
                     parsed.getKeywords(),
                     "gemini-2.5-flash",
-                    meta
+                    managedMeta
             );
 
             summaryRepo.save(summary);
-            meta.markSummaryDone();
+
+            managedMeta.markSummaryDone();
+            metaRepo.save(managedMeta);
 
         } catch (Exception e) {
-            meta.markSummaryFailed();
+            managedMeta.markSummaryFailed();
+            metaRepo.save(managedMeta);
 
             ArticleFailLog log = new ArticleFailLog();
-            log.setUrl(meta.getUrl());
+            log.setUrl(managedMeta.getUrl());
             log.setStep("SUMMARY");
             log.setReason(e.getMessage());
             log.setDetail(null);
             failLogRepo.save(log);
-
-            throw e;
         }
     }
+
 }
