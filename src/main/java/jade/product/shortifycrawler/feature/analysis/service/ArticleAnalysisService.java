@@ -99,19 +99,17 @@ public class ArticleAnalysisService {
     @Transactional
     public void analyzeOneForTest() {
 
-        List<ArticleAnalysisTarget> targets =
-                articleMetaRepository.findAnalysisTargets(
-                        ArticleProcessStatus.COLLECTED,
-                        LocalDateTime.now().minusHours(24),
-                        LocalDateTime.now()
-                );
+        ArticleMeta meta = articleMetaRepository
+                .findFirstByStatusOrderByCollectedAtAsc(ArticleProcessStatus.COLLECTED)
+                .orElse(null);
 
-        if (targets.isEmpty()) {
-            log.warn("[ANALYSIS-TEST] no collected articles to test");
+        if (meta == null) {
+            log.warn("[ANALYSIS-TEST] no collected meta found");
             return;
         }
 
-        ArticleAnalysisTarget target = targets.get(0);
+        ArticleAnalysisTarget target =
+                ArticleAnalysisTarget.from(meta); // 직접 생성
 
         AnalyzerDedupRequestDto request =
                 AnalyzerDedupRequestDto.from(target);
@@ -126,19 +124,6 @@ public class ArticleAnalysisService {
 
         AnalyzerDedupResponseDto result = results.get(0);
 
-        ArticleMeta meta = articleMetaRepository
-                .findById(target.getMetaId())
-                .orElse(null);
-
-        if (meta == null) {
-            log.warn(
-                    "[ANALYSIS-TEST] meta not found. metaId={}, articleId={}",
-                    target.getMetaId(),
-                    target.getArticleId()
-            );
-            return;
-        }
-
         if (result.isDuplicate()) {
             meta.markDuplicated();
         } else {
@@ -147,8 +132,8 @@ public class ArticleAnalysisService {
 
         log.info(
                 "[ANALYSIS-TEST] metaId={}, articleId={}, duplicate={}, score={}",
-                target.getMetaId(),
-                target.getArticleId(),
+                meta.getId(),
+                result.getArticleId(),
                 result.isDuplicate(),
                 result.getScore()
         );

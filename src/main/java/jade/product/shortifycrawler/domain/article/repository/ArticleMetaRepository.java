@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ArticleMetaRepository
         extends JpaRepository<ArticleMeta, Long> {
@@ -41,5 +42,7 @@ public interface ArticleMetaRepository
             LocalDateTime from,
             LocalDateTime to
     );
+
+    Optional<ArticleMeta> findFirstByStatusOrderByCollectedAtAsc(ArticleProcessStatus status);
 
 }
