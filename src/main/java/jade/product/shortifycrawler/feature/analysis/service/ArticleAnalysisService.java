@@ -95,48 +95,48 @@ public class ArticleAnalysisService {
 
         return analyzed;
     }
-
-    @Transactional
-    public void analyzeOneForTest() {
-
-        ArticleMeta meta = articleMetaRepository
-                .findFirstByStatusOrderByCollectedAtAsc(ArticleProcessStatus.COLLECTED)
-                .orElse(null);
-
-        if (meta == null) {
-            log.warn("[ANALYSIS-TEST] no collected meta found");
-            return;
-        }
-
-        ArticleAnalysisTarget target =
-                ArticleAnalysisTarget.from(meta); // 직접 생성
-
-        AnalyzerDedupRequestDto request =
-                AnalyzerDedupRequestDto.from(target);
-
-        List<AnalyzerDedupResponseDto> results =
-                analyzerClient.dedupBatch(List.of(request));
-
-        if (results.isEmpty()) {
-            log.warn("[ANALYSIS-TEST] analyzer returned empty result");
-            return;
-        }
-
-        AnalyzerDedupResponseDto result = results.get(0);
-
-        if (result.isDuplicate()) {
-            meta.markDuplicated();
-        } else {
-            meta.markAnalyzed();
-        }
-
-        log.info(
-                "[ANALYSIS-TEST] metaId={}, articleId={}, duplicate={}, score={}",
-                meta.getId(),
-                result.getArticleId(),
-                result.isDuplicate(),
-                result.getScore()
-        );
-    }
+//
+//    @Transactional
+//    public void analyzeOneForTest() {
+//
+//        ArticleMeta meta = articleMetaRepository
+//                .findFirstByStatusOrderByCollectedAtAsc(ArticleProcessStatus.COLLECTED)
+//                .orElse(null);
+//
+//        if (meta == null) {
+//            log.warn("[ANALYSIS-TEST] no collected meta found");
+//            return;
+//        }
+//
+//        ArticleAnalysisTarget target =
+//                ArticleAnalysisTarget.from(meta); // 직접 생성
+//
+//        AnalyzerDedupRequestDto request =
+//                AnalyzerDedupRequestDto.from(target);
+//
+//        List<AnalyzerDedupResponseDto> results =
+//                analyzerClient.dedupBatch(List.of(request));
+//
+//        if (results.isEmpty()) {
+//            log.warn("[ANALYSIS-TEST] analyzer returned empty result");
+//            return;
+//        }
+//
+//        AnalyzerDedupResponseDto result = results.get(0);
+//
+//        if (result.isDuplicate()) {
+//            meta.markDuplicated();
+//        } else {
+//            meta.markAnalyzed();
+//        }
+//
+//        log.info(
+//                "[ANALYSIS-TEST] metaId={}, articleId={}, duplicate={}, score={}",
+//                meta.getId(),
+//                result.getArticleId(),
+//                result.isDuplicate(),
+//                result.getScore()
+//        );
+//    }
 
 }
