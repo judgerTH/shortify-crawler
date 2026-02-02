@@ -70,4 +70,13 @@ public class ArticleMeta {
     public void markSummaryFailed() {
         this.status = ArticleProcessStatus.SUMMARY_FAILED;
     }
+
+    public void markAnalyzed() {
+        this.status = ArticleProcessStatus.ANALYZED;
+    }
+
+    public void markDuplicated() {
+        this.status = ArticleProcessStatus.DUPLICATED;
+    }
+
 }
