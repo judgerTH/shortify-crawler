@@ -97,46 +97,60 @@ public class ArticleAnalysisService {
     }
 
     @Transactional
-    public void analyzeOneForTest(Long metaId) {
+    public void analyzeOneForTest() {
 
-        ArticleMeta meta = articleMetaRepository.findById(metaId)
-                .orElseThrow(() -> new IllegalArgumentException("meta not found"));
-
-        // OriginalArticle은 Projection으로 다시 조회
+        // COLLECTED 상태 중 최신 1건 조회
         List<ArticleAnalysisTarget> targets =
                 articleMetaRepository.findAnalysisTargets(
                         ArticleProcessStatus.COLLECTED,
-                        meta.getCollectedAt().minusMinutes(1),
-                        meta.getCollectedAt().plusMinutes(1)
+                        LocalDateTime.now().minusHours(24),
+                        LocalDateTime.now()
                 );
 
-        ArticleAnalysisTarget target = targets.stream()
-                .filter(t -> t.getMetaId().equals(metaId))
-                .findFirst()
-                .orElseThrow();
+        if (targets.isEmpty()) {
+            log.warn("[ANALYSIS-TEST] no collected articles to test");
+            return;
+        }
 
+        ArticleAnalysisTarget target = targets.get(0);
+
+        // Analyzer 요청 DTO
         AnalyzerDedupRequestDto request =
                 AnalyzerDedupRequestDto.from(target);
 
-        // 배치 API지만 테스트라 1건만
+        // Analyzer 호출 (배치지만 1건 테스트)
         List<AnalyzerDedupResponseDto> results =
                 analyzerClient.dedupBatch(List.of(request));
 
-        AnalyzerDedupResponseDto result = results.get(0);
-
-        if (result.isDuplicate()) {
-            meta.markDuplicated();
-        } else {
-            meta.markAnalyzed();
+        if (results.isEmpty()) {
+            log.warn(
+                    "[ANALYSIS-TEST] analyzer returned empty result for articleId={}",
+                    target.getArticleId()
+            );
+            return;
         }
 
+        AnalyzerDedupResponseDto result = results.get(0);
+
+        // Meta 상태 반영
+        articleMetaRepository.findById(target.getMetaId())
+                .ifPresent(meta -> {
+                    if (result.isDuplicate()) {
+                        meta.markDuplicated();
+                    } else {
+                        meta.markAnalyzed();
+                    }
+                });
+
+        // 로그
         log.info(
                 "[ANALYSIS-TEST] metaId={}, articleId={}, duplicate={}, score={}",
-                metaId,
+                target.getMetaId(),
                 result.getArticleId(),
                 result.isDuplicate(),
                 result.getScore()
         );
     }
+
 
 }

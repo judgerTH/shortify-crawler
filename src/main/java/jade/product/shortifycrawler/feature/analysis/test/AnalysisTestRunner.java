@@ -17,7 +17,11 @@ public class AnalysisTestRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         log.info("[ANALYSIS-TEST] start");
-        analysisService.analyzeOneForTest(1L);
+        try {
+            analysisService.analyzeOneForTest();
+        } catch (Exception e) {
+            log.error("[ANALYSIS-TEST] failed", e);
+        }
         log.info("[ANALYSIS-TEST] end");
     }
 }
