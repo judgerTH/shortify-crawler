@@ -99,7 +99,6 @@ public class ArticleAnalysisService {
     @Transactional
     public void analyzeOneForTest() {
 
-        // COLLECTED 상태 중 최신 1건 조회
         List<ArticleAnalysisTarget> targets =
                 articleMetaRepository.findAnalysisTargets(
                         ArticleProcessStatus.COLLECTED,
@@ -114,11 +113,9 @@ public class ArticleAnalysisService {
 
         ArticleAnalysisTarget target = targets.get(0);
 
-        // Analyzer 요청 DTO
         AnalyzerDedupRequestDto request =
                 AnalyzerDedupRequestDto.from(target);
 
-        // Analyzer 호출 (배치지만 1건 테스트)
         List<AnalyzerDedupResponseDto> results =
                 analyzerClient.dedupBatch(List.of(request));
 
@@ -132,7 +129,6 @@ public class ArticleAnalysisService {
 
         AnalyzerDedupResponseDto result = results.get(0);
 
-        // Meta 상태 반영
         articleMetaRepository.findById(target.getMetaId())
                 .ifPresent(meta -> {
                     if (result.isDuplicate()) {
@@ -142,15 +138,13 @@ public class ArticleAnalysisService {
                     }
                 });
 
-        // 로그
         log.info(
                 "[ANALYSIS-TEST] metaId={}, articleId={}, duplicate={}, score={}",
                 target.getMetaId(),
-                result.getArticleId(),
+                target.getArticleId(),
                 result.isDuplicate(),
                 result.getScore()
         );
     }
-
 
 }
