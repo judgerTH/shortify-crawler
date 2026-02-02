@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/shortify
+            cd ~/shortify/shortify-crawler
             git pull
             docker compose build shortify-crawler
             docker compose up -d shortify-crawler
