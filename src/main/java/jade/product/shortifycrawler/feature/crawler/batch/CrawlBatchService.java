@@ -2,6 +2,7 @@ package jade.product.shortifycrawler.feature.crawler.batch;
 
 import jade.product.shortifycrawler.feature.crawler.service.PipelineService;
 import jade.product.shortifycrawler.feature.crawler.source.PressLatestCollector;
+import jade.product.shortifycrawler.global.analyzer.AnalyzerTestClient;
 import jade.product.shortifycrawler.global.notify.DiscordNotifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,9 @@ public class CrawlBatchService {
     private final PipelineService pipelineService;
     private final DiscordNotifier discordNotifier;
 
+    // 테스트용
+    private final AnalyzerTestClient analyzerTestClient;
+
     // 이후 파이썬 머신러닝 모델 합류 예정
     public CrawlResult run() {
 
@@ -26,6 +30,8 @@ public class CrawlBatchService {
         int fail = 0;
 
         log.info("[CRAWL-BATCH] start");
+
+        analyzerTestClient.testCall();
 
         try {
             Map<String, String> pressUrlMap =
