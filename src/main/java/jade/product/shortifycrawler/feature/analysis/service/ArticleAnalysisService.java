@@ -120,23 +120,30 @@ public class ArticleAnalysisService {
                 analyzerClient.dedupBatch(List.of(request));
 
         if (results.isEmpty()) {
-            log.warn(
-                    "[ANALYSIS-TEST] analyzer returned empty result for articleId={}",
-                    target.getArticleId()
-            );
+            log.warn("[ANALYSIS-TEST] analyzer returned empty result");
             return;
         }
 
         AnalyzerDedupResponseDto result = results.get(0);
 
-        articleMetaRepository.findById(target.getMetaId())
-                .ifPresent(meta -> {
-                    if (result.isDuplicate()) {
-                        meta.markDuplicated();
-                    } else {
-                        meta.markAnalyzed();
-                    }
-                });
+        ArticleMeta meta = articleMetaRepository
+                .findById(target.getMetaId())
+                .orElse(null);
+
+        if (meta == null) {
+            log.warn(
+                    "[ANALYSIS-TEST] meta not found. metaId={}, articleId={}",
+                    target.getMetaId(),
+                    target.getArticleId()
+            );
+            return;
+        }
+
+        if (result.isDuplicate()) {
+            meta.markDuplicated();
+        } else {
+            meta.markAnalyzed();
+        }
 
         log.info(
                 "[ANALYSIS-TEST] metaId={}, articleId={}, duplicate={}, score={}",
