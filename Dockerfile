@@ -35,4 +35,5 @@ RUN ./gradlew bootJar --no-daemon
 # Run
 # =========================
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java -jar build/libs/*.jar"]
+ENTRYPOINT ["java", "-jar", "build/libs/shortify-crawler-0.0.1-SNAPSHOT.jar"]
+
