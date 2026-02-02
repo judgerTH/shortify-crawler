@@ -18,6 +18,7 @@ public class CrawlBatchService {
     private final PipelineService pipelineService;
     private final DiscordNotifier discordNotifier;
 
+    // 이후 파이썬 머신러닝 모델 합류 예정
     public CrawlResult run() {
 
         long start = System.currentTimeMillis();
