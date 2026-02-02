@@ -1,23 +1,38 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:17-jdk-jammy
+
+# =========================
+# Timezone
+# =========================
+ENV TZ=Asia/Seoul
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 WORKDIR /app
 
-# Gradle Wrapper 복사
+# =========================
+# Gradle Wrapper
+# =========================
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle settings.gradle ./
-
-# 실행 권한
 RUN chmod +x gradlew
 
-# 의존성 캐시
+# =========================
+# Dependency Cache
+# =========================
 RUN ./gradlew dependencies --no-daemon || true
 
-# 소스 복사
+# =========================
+# Source
+# =========================
 COPY src src
 
-# 빌드
-RUN ./gradlew clean build -x test --no-daemon
+# =========================
+# Build
+# =========================
+RUN ./gradlew bootJar --no-daemon
 
-# 실행 (버전 안전)
-CMD ["sh", "-c", "java -jar build/libs/*.jar"]
+# =========================
+# Run
+# =========================
+EXPOSE 8080
+ENTRYPOINT ["sh", "-c", "java -jar build/libs/*.jar"]
